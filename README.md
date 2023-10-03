@@ -1,14 +1,5 @@
-# ![freqtrade](https://raw.githubusercontent.com/freqtrade/freqtrade/develop/docs/assets/freqtrade_poweredby.svg)
 
-[![Freqtrade CI](https://github.com/freqtrade/freqtrade/workflows/Freqtrade%20CI/badge.svg)](https://github.com/freqtrade/freqtrade/actions/)
-[![DOI](https://joss.theoj.org/papers/10.21105/joss.04864/status.svg)](https://doi.org/10.21105/joss.04864)
-[![Coverage Status](https://coveralls.io/repos/github/freqtrade/freqtrade/badge.svg?branch=develop&service=github)](https://coveralls.io/github/freqtrade/freqtrade?branch=develop)
-[![Documentation](https://readthedocs.org/projects/freqtrade/badge/)](https://www.freqtrade.io)
-[![Maintainability](https://api.codeclimate.com/v1/badges/5737e6d668200b7518ff/maintainability)](https://codeclimate.com/github/freqtrade/freqtrade/maintainability)
-
-Freqtrade is a free and open source crypto trading bot written in Python. It is designed to support all major exchanges and be controlled via Telegram or webUI. It contains backtesting, plotting and money management tools as well as strategy optimization by machine learning.
-
-![freqtrade](https://raw.githubusercontent.com/freqtrade/freqtrade/develop/docs/assets/freqtrade-screenshot.png)
+[ This repo is forked from https://github.com/freqtrade/freqtrade for personal uses ]
 
 ## Disclaimer
 
@@ -142,57 +133,6 @@ Telegram is not mandatory. However, this is a great way to control your bot. Mor
 - `/help`: Show help message.
 - `/version`: Show version.
 
-## Development branches
-
-The project is currently setup in two main branches:
-
-- `develop` - This branch has often new features, but might also contain breaking changes. We try hard to keep this branch as stable as possible.
-- `stable` - This branch contains the latest stable release. This branch is generally well tested.
-- `feat/*` - These are feature branches, which are being worked on heavily. Please don't use these unless you want to test a specific feature.
-
-## Support
-
-### Help / Discord
-
-For any questions not covered by the documentation or for further information about the bot, or to simply engage with like-minded individuals, we encourage you to join the Freqtrade [discord server](https://discord.gg/p7nuUNVfP7).
-
-### [Bugs / Issues](https://github.com/freqtrade/freqtrade/issues?q=is%3Aissue)
-
-If you discover a bug in the bot, please
-[search the issue tracker](https://github.com/freqtrade/freqtrade/issues?q=is%3Aissue)
-first. If it hasn't been reported, please
-[create a new issue](https://github.com/freqtrade/freqtrade/issues/new/choose) and
-ensure you follow the template guide so that the team can assist you as
-quickly as possible.
-
-For every [issue](https://github.com/freqtrade/freqtrade/issues/new/choose) created, kindly follow up and mark satisfaction or reminder to close issue when equilibrium ground is reached.
-
---Maintain github's [community policy](https://docs.github.com/en/site-policy/github-terms/github-community-code-of-conduct)--
-
-### [Feature Requests](https://github.com/freqtrade/freqtrade/labels/enhancement)
-
-Have you a great idea to improve the bot you want to share? Please,
-first search if this feature was not [already discussed](https://github.com/freqtrade/freqtrade/labels/enhancement).
-If it hasn't been requested, please
-[create a new request](https://github.com/freqtrade/freqtrade/issues/new/choose)
-and ensure you follow the template guide so that it does not get lost
-in the bug reports.
-
-### [Pull Requests](https://github.com/freqtrade/freqtrade/pulls)
-
-Feel like the bot is missing a feature? We welcome your pull requests!
-
-Please read the
-[Contributing document](https://github.com/freqtrade/freqtrade/blob/develop/CONTRIBUTING.md)
-to understand the requirements before sending your pull-requests.
-
-Coding is not a necessity to contribute - maybe start with improving the documentation?
-Issues labeled [good first issue](https://github.com/freqtrade/freqtrade/labels/good%20first%20issue) can be good first contributions, and will help get you familiar with the codebase.
-
-**Note** before starting any major new feature work, *please open an issue describing what you are planning to do* or talk to us on [discord](https://discord.gg/p7nuUNVfP7) (please use the #dev channel for this). This will ensure that interested parties can give valuable feedback on the feature, and let others know that you are working on it.
-
-**Important:** Always create your PR against the `develop` branch, not `stable`.
-
 ## Requirements
 
 ### Up-to-date clock
@@ -213,3 +153,50 @@ To run this bot we recommend you a cloud instance with a minimum of:
 - [TA-Lib](https://ta-lib.github.io/ta-lib-python/)
 - [virtualenv](https://virtualenv.pypa.io/en/stable/installation.html) (Recommended)
 - [Docker](https://www.docker.com/products/docker) (Recommended)
+
+## Setting as Service on a Linux host (tested on Ubuntu 20.04)
+
+- Clone this repo on ~/ folder
+
+- Follow the [installation process](https://www.freqtrade.io/en/stable/installation/)
+
+- Copy template_config_jle.json to config.json ('cp template_config_jle.json config.json' on your terminal)
+
+- Setup [Telegram](https://www.freqtrade.io/en/stable/telegram-usage/) to control the bot
+
+- Setup your [Exchange](https://www.freqtrade.io/en/stable/exchanges/) (I chose Binance)
+
+- Be sure to have credit on your Wallet
+
+ATTENTION: before enabling the use of your wallet and money, please run dry mode for few days/weeks to test. (https://www.freqtrade.io/en/stable/configuration/#using-dry-run-mode) 
+
+- On the Ubuntu host (replace XXX by your username):
+
+sudo nano /etc/systemd/system/freqtrade.service
+
+```
+[Unit]
+Description=FreqTrade Launcher
+After=network-online.target
+Documentation=https://github.com/freqtrade/freqtrade
+
+[Service]
+Type=simple
+User=XXX
+WorkingDirectory=/home/XXX/freqtrade
+ExecStart=/home/XXX/freqtrade/.venv/bin/freqtrade trade --config config.json --strategy Strategy001
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+```
+
+and then:
+
+sudo systemctl enable freqtrade.service
+sudo systemctl start freqtrade.service
+
+- You may check status with 'sudo systemctl status freqtrade'
+- You may check logs with 'sudo journalctl status freqtrade'
+
+You should now receive update messages on the Telegram group chat.
