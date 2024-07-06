@@ -14,7 +14,7 @@ You can specify a different configuration file used by the bot with the `-c/--co
 If you used the [Quick start](docker_quickstart.md#docker-quick-start) method for installing
 the bot, the installation script should have already created the default configuration file (`config.json`) for you.
 
-If the default configuration file is not created we recommend to use `freqtrade new-config --config config.json` to generate a basic configuration file.
+If the default configuration file is not created we recommend to use `freqtrade new-config --config user_data/config.json` to generate a basic configuration file.
 
 The Freqtrade configuration file is to be written in JSON format.
 
@@ -49,12 +49,22 @@ FREQTRADE__EXCHANGE__SECRET=<yourExchangeSecret>
 !!! Note
     Environment variables detected are logged at startup - so if you can't find why a value is not what you think it should be based on the configuration, make sure it's not loaded from an environment variable.
 
+!!! Tip "Validate combined result"
+    You can use the [show-config subcommand](utils.md#show-config) to see the final, combined configuration.
+
+??? Warning "Loading sequence"
+    Environment variables are loaded after the initial configuration. As such, you cannot provide the path to the configuration through environment variables. Please use `--config path/to/config.json` for that.
+    This also applies to user_dir to some degree. while the user directory can be set through environment variables - the configuration will **not** be loaded from that location.
+
 ### Multiple configuration files
 
 Multiple configuration files can be specified and used by the bot or the bot can read its configuration parameters from the process standard input stream.
 
 You can specify additional configuration files in `add_config_files`. Files specified in this parameter will be loaded and merged with the initial config file. The files are resolved relative to the initial configuration file.
 This is similar to using multiple `--config` parameters, but simpler in usage as you don't have to specify all files for all commands.
+
+!!! Tip "Validate combined result"
+    You can use the [show-config subcommand](utils.md#show-config) to see the final, combined configuration.
 
 !!! Tip "Use multiple configuration files to keep secrets secret"
     You can use a 2nd configuration file containing your secrets. That way you can share your "primary" configuration file, while still keeping your API keys for yourself.
@@ -187,16 +197,17 @@ Mandatory parameters are marked as **Required**, which means that they are requi
 | `position_adjustment_enable` | Enables the strategy to use position adjustments (additional buys or sells). [More information here](strategy-callbacks.md#adjust-trade-position). <br> [Strategy Override](#parameters-in-the-strategy). <br>*Defaults to `false`.*<br> **Datatype:** Boolean
 | `max_entry_position_adjustment` | Maximum additional order(s) for each open trade on top of the first entry Order. Set it to `-1` for unlimited additional orders. [More information here](strategy-callbacks.md#adjust-trade-position). <br> [Strategy Override](#parameters-in-the-strategy). <br>*Defaults to `-1`.*<br> **Datatype:** Positive Integer or -1
 | | **Exchange**
-| `exchange.name` | **Required.** Name of the exchange class to use. [List below](#user-content-what-values-for-exchangename). <br> **Datatype:** String
+| `exchange.name` | **Required.** Name of the exchange class to use. <br> **Datatype:** String
 | `exchange.key` | API key to use for the exchange. Only required when you are in production mode.<br>**Keep it in secret, do not disclose publicly.** <br> **Datatype:** String
 | `exchange.secret` | API secret to use for the exchange. Only required when you are in production mode.<br>**Keep it in secret, do not disclose publicly.** <br> **Datatype:** String
 | `exchange.password` | API password to use for the exchange. Only required when you are in production mode and for exchanges that use password for API requests.<br>**Keep it in secret, do not disclose publicly.** <br> **Datatype:** String
 | `exchange.uid` | API uid to use for the exchange. Only required when you are in production mode and for exchanges that use uid for API requests.<br>**Keep it in secret, do not disclose publicly.** <br> **Datatype:** String
 | `exchange.pair_whitelist` | List of pairs to use by the bot for trading and to check for potential trades during backtesting. Supports regex pairs as `.*/BTC`. Not used by VolumePairList. [More information](plugins.md#pairlists-and-pairlist-handlers). <br> **Datatype:** List
 | `exchange.pair_blacklist` | List of pairs the bot must absolutely avoid for trading and backtesting. [More information](plugins.md#pairlists-and-pairlist-handlers). <br> **Datatype:** List
-| `exchange.ccxt_config` | Additional CCXT parameters passed to both ccxt instances (sync and async). This is usually the correct place for additional ccxt configurations. Parameters may differ from exchange to exchange and are documented in the [ccxt documentation](https://ccxt.readthedocs.io/en/latest/manual.html#instantiation). Please avoid adding exchange secrets here (use the dedicated fields instead), as they may be contained in logs. <br> **Datatype:** Dict
-| `exchange.ccxt_sync_config` | Additional CCXT parameters passed to the regular (sync) ccxt instance. Parameters may differ from exchange to exchange and are documented in the [ccxt documentation](https://ccxt.readthedocs.io/en/latest/manual.html#instantiation) <br> **Datatype:** Dict
-| `exchange.ccxt_async_config` | Additional CCXT parameters passed to the async ccxt instance. Parameters may differ from exchange to exchange  and are documented in the [ccxt documentation](https://ccxt.readthedocs.io/en/latest/manual.html#instantiation) <br> **Datatype:** Dict
+| `exchange.ccxt_config` | Additional CCXT parameters passed to both ccxt instances (sync and async). This is usually the correct place for additional ccxt configurations. Parameters may differ from exchange to exchange and are documented in the [ccxt documentation](https://docs.ccxt.com/#/README?id=overriding-exchange-properties-upon-instantiation). Please avoid adding exchange secrets here (use the dedicated fields instead), as they may be contained in logs. <br> **Datatype:** Dict
+| `exchange.ccxt_sync_config` | Additional CCXT parameters passed to the regular (sync) ccxt instance. Parameters may differ from exchange to exchange and are documented in the [ccxt documentation](https://docs.ccxt.com/#/README?id=overriding-exchange-properties-upon-instantiation) <br> **Datatype:** Dict
+| `exchange.ccxt_async_config` | Additional CCXT parameters passed to the async ccxt instance. Parameters may differ from exchange to exchange  and are documented in the [ccxt documentation](https://docs.ccxt.com/#/README?id=overriding-exchange-properties-upon-instantiation) <br> **Datatype:** Dict
+| `exchange.enable_ws` | Enable the usage of Websockets for the exchange. <br>[More information](#consuming-exchange-websockets).<br>*Defaults to `true`.* <br> **Datatype:** Boolean
 | `exchange.markets_refresh_interval` | The interval in minutes in which markets are reloaded. <br>*Defaults to `60` minutes.* <br> **Datatype:** Positive Integer
 | `exchange.skip_pair_validation` | Skip pairlist validation on startup.<br>*Defaults to `false`*<br> **Datatype:** Boolean
 | `exchange.skip_open_order_update` | Skips open order updates on startup should the exchange cause problems. Only relevant in live conditions.<br>*Defaults to `false`*<br> **Datatype:** Boolean
@@ -242,7 +253,7 @@ Mandatory parameters are marked as **Required**, which means that they are requi
 | `disable_dataframe_checks` | Disable checking the OHLCV dataframe returned from the strategy methods for correctness. Only use when intentionally changing the dataframe and understand what you are doing. [Strategy Override](#parameters-in-the-strategy).<br> *Defaults to `False`*. <br> **Datatype:** Boolean
 | `internals.process_throttle_secs` | Set the process throttle, or minimum loop duration for one bot iteration loop. Value in second. <br>*Defaults to `5` seconds.* <br> **Datatype:** Positive Integer
 | `internals.heartbeat_interval` | Print heartbeat message every N seconds. Set to 0 to disable heartbeat messages. <br>*Defaults to `60` seconds.* <br> **Datatype:** Positive Integer or 0
-| `internals.sd_notify` | Enables use of the sd_notify protocol to tell systemd service manager about changes in the bot state and issue keep-alive pings. See [here](installation.md#7-optional-configure-freqtrade-as-a-systemd-service) for more details. <br> **Datatype:** Boolean
+| `internals.sd_notify` | Enables use of the sd_notify protocol to tell systemd service manager about changes in the bot state and issue keep-alive pings. See [here](advanced-setup.md#configure-the-bot-running-as-a-systemd-service) for more details. <br> **Datatype:** Boolean
 | `strategy` | **Required** Defines Strategy class to use. Recommended to be set via `--strategy NAME`. <br> **Datatype:** ClassName
 | `strategy_path` | Adds an additional strategy lookup path (must be a directory). <br> **Datatype:** String
 | `recursive_strategy_search` | Set to `true` to recursively search sub-directories inside `user_data/strategies` for a strategy. <br> **Datatype:** Boolean
@@ -321,10 +332,12 @@ For example, if you have 10 ETH available in your wallet on the exchange and `tr
 To fully utilize compounding profits when using multiple bots on the same exchange account, you'll want to limit each bot to a certain starting balance.
 This can be accomplished by setting `available_capital` to the desired starting balance.
 
-Assuming your account has 10.000 USDT and you want to run 2 different strategies on this exchange.
+Assuming your account has 10000 USDT and you want to run 2 different strategies on this exchange.
 You'd set `available_capital=5000` - granting each bot an initial capital of 5000 USDT.
 The bot will then split this starting balance equally into `max_open_trades` buckets.
 Profitable trades will result in increased stake-sizes for this bot - without affecting the stake-sizes of the other bot.
+
+Adjusting `available_capital` requires reloading the configuration to take effect. Adjusting the `available_capital` adds the difference between the previous `available_capital` and the new `available_capital`. Decreasing the available capital when trades are open doesn't exit the trades. The difference is returned to the wallet when the trades conclude. The outcome of this differs depending on the price movement between the adjustment and exiting the trades.
 
 !!! Warning "Incompatible with `tradable_balance_ratio`"
     Setting this option will replace any configuration of `tradable_balance_ratio`.
@@ -358,7 +371,7 @@ This setting works in combination with `max_open_trades`. The maximum capital en
 For example, the bot will at most use (0.05 BTC x 3) = 0.15 BTC, assuming a configuration of `max_open_trades=3` and `stake_amount=0.05`.
 
 !!! Note
-    This setting respects the [available balance configuration](#available-balance).
+    This setting respects the [available balance configuration](#tradable-balance).
 
 #### Dynamic stake amount
 
@@ -396,6 +409,8 @@ For example if your position adjustment assumes it can do 2 additional buys with
 Or another example if your position adjustment assumes it can do 1 additional buy with 3x the original stake amount then `custom_stake_amount` should return 25% of proposed stake amount and leave 75% for possible later position adjustments.
 
 --8<-- "includes/pricing.md"
+
+## Further Configuration details
 
 ### Understand minimal_roi
 
@@ -503,13 +518,13 @@ Configuration:
     Please carefully read the section [Market order pricing](#market-order-pricing) section when using market orders.
 
 !!! Note "Stoploss on exchange"
-    `stoploss_on_exchange_interval` is not mandatory. Do not change its value if you are
+    `order_types.stoploss_on_exchange_interval` is not mandatory. Do not change its value if you are
     unsure of what you are doing. For more information about how stoploss works please
     refer to [the stoploss documentation](stoploss.md).
 
-    If `stoploss_on_exchange` is enabled and the stoploss is cancelled manually on the exchange, then the bot will create a new stoploss order.
+    If `order_types.stoploss_on_exchange` is enabled and the stoploss is cancelled manually on the exchange, then the bot will create a new stoploss order.
 
-!!! Warning "Warning: stoploss_on_exchange failures"
+!!! Warning "Warning: order_types.stoploss_on_exchange failures"
     If stoploss on exchange creation fails for some reason, then an "emergency exit" is initiated. By default, this will exit the trade using a market order. The order-type for the emergency-exit can be changed by setting the `emergency_exit` value in the `order_types` dictionary - however, this is not advised.
 
 ### Understand order_time_in_force
@@ -535,7 +550,7 @@ is automatically cancelled by the exchange.
 **PO (Post only):**
 
 Post only order. The order is either placed as a maker order, or it is canceled.
-This means the order must be placed on orderbook for at at least time in an unfilled state.
+This means the order must be placed on orderbook for at least time in an unfilled state.
 
 #### time_in_force config
 
@@ -556,7 +571,14 @@ The possible values are: `GTC` (default), `FOK` or `IOC`.
     This is ongoing work. For now, it is supported only for binance, gate and kucoin.
     Please don't change the default value unless you know what you are doing and have researched the impact of using different values for your particular exchange.
 
-### What values can be used for fiat_display_currency?
+### Fiat conversion
+
+Freqtrade uses the Coingecko API to convert the coin value to it's corresponding fiat value for the Telegram reports.
+The FIAT currency can be set in the configuration file as `fiat_display_currency`.
+
+Removing `fiat_display_currency` completely from the configuration will skip initializing coingecko, and will not show any FIAT currency conversion. This has no importance for the correct functioning of the bot.
+
+#### What values can be used for fiat_display_currency?
 
 The `fiat_display_currency` configuration parameter sets the base currency to use for the
 conversion from coin to fiat in the bot Telegram reports.
@@ -572,8 +594,52 @@ In addition to fiat currencies, a range of crypto currencies is supported.
 The valid values are:
 
 ```json
-"BTC", "ETH", "XRP", "LTC", "BCH", "USDT"
+"BTC", "ETH", "XRP", "LTC", "BCH", "BNB"
 ```
+
+#### Coingecko Rate limit problems
+
+On some IP ranges, coingecko is heavily rate-limiting.
+In such cases, you may want to add your coingecko API key to the configuration.
+
+``` json
+{
+    "fiat_display_currency": "USD",
+    "coingecko": {
+        "api_key": "your-api",
+        "is_demo": true
+    }
+}
+```
+
+Freqtrade supports both Demo and Pro coingecko API keys.
+
+The Coingecko API key is NOT required for the bot to function correctly.
+It is only used for the conversion of coin to fiat in the Telegram reports, which usually also work without API key.
+
+## Consuming exchange Websockets
+
+Freqtrade can consume websockets through ccxt.pro.
+
+Freqtrade aims ensure data is available at all times.
+Should the websocket connection fail (or be disabled), the bot will fall back to REST API calls.
+
+Should you experience problems you suspect are caused by websockets, you can disable these via the setting `exchange.enable_ws`, which defaults to true.
+
+```jsonc
+"exchange": {
+    // ...
+    "enable_ws": false,
+    // ...
+}
+```
+
+Should you be required to use a proxy, please refer to the [proxy section](#using-proxy-with-freqtrade) for more information.
+
+!!! Info "Rollout"
+    We're implementing this out slowly, ensuring stability of your bots.
+    Currently, usage is limited to ohlcv data streams.
+    It's also limited to a few exchanges, with new exchanges being added on an ongoing basis.
 
 ## Using Dry-run mode
 
@@ -594,7 +660,7 @@ creating trades on the exchange.
 
 ```json
 "exchange": {
-    "name": "bittrex",
+    "name": "binance",
     "key": "key",
     "secret": "secret",
     ...
@@ -611,9 +677,9 @@ Once you will be happy with your bot performance running in the Dry-run mode, yo
 * API-keys may or may not be provided. Only Read-Only operations (i.e. operations that do not alter account state) on the exchange are performed in dry-run mode.
 * Wallets (`/balance`) are simulated based on `dry_run_wallet`.
 * Orders are simulated, and will not be posted to the exchange.
-* Market orders fill based on orderbook volume the moment the order is placed.
+* Market orders fill based on orderbook volume the moment the order is placed, with a maximum slippage of 5%.
 * Limit orders fill once the price reaches the defined level - or time out based on `unfilledtimeout` settings.
-* Limit orders will be converted to market orders if they cross the price by more than 1%.
+* Limit orders will be converted to market orders if they cross the price by more than 1%, and will be filled immediately based regular market order rules (see point about Market orders above).
 * In combination with `stoploss_on_exchange`, the stop_loss price is assumed to be filled.
 * Open orders (not trades, which are stored in the database) are kept open after bot restarts, with the assumption that they were not filled while being offline.
 
@@ -644,7 +710,7 @@ API Keys are usually only required for live trading (trading for real money, bot
 ```json
 {
     "exchange": {
-        "name": "bittrex",
+        "name": "binance",
         "key": "af8ddd35195e9dc500b9a6f799f6f5c93d89193b",
         "secret": "08a9dc6db3d7b53e1acebd9275677f4b0a04f1a5",
         //"password": "", // Optional, not needed by all exchanges)
@@ -663,7 +729,7 @@ You should also make sure to read the [Exchanges](exchanges.md) section of the d
 
     **NEVER** share your private configuration file or your exchange keys with anyone!
 
-### Using proxy with Freqtrade
+## Using a proxy with Freqtrade
 
 To use a proxy with freqtrade, export your proxy settings using the variables `"HTTP_PROXY"` and `"HTTPS_PROXY"` set to the appropriate values.
 This will have the proxy settings applied to everything (telegram, coingecko, ...) **except** for exchange requests.
@@ -674,7 +740,7 @@ export HTTPS_PROXY="http://addr:port"
 freqtrade
 ```
 
-#### Proxy exchange requests
+### Proxy exchange requests
 
 To use a proxy for exchange connections - you will have to define the proxies as part of the ccxt configuration.
 
@@ -683,6 +749,7 @@ To use a proxy for exchange connections - you will have to define the proxies as
   "exchange": {
     "ccxt_config": {
       "httpsProxy": "http://addr:port",
+      "wsProxy": "http://addr:port",
     }
   }
 }
