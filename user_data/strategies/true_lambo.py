@@ -182,7 +182,7 @@ class true_lambo(IStrategy):
         ##
         "high_offset": 0.963,
         "high_offset_2": 1.391,
-        "pHSL": -0.083,
+        "pHSL": -0.15,
         "pPF_1": 0.011,
         "pPF_2": 0.048,
         "pSL_1": 0.02,
