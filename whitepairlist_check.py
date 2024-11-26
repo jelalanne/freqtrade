@@ -6,7 +6,7 @@ exchange = ccxt.binance()
 
 # Liste des paires à évaluer
 pairs = [
-	"ADA/EUR", "ALPINE/EUR", "APE/EUR", "APT/EUR", "ARB/EUR", "ATOM/EUR", "AVAX/EUR", "BCH/EUR", "BNB/EUR", "BTC/EUR", "BTT/EUR", "CHZ/EUR", "DAR/EUR", "DOGE/EUR", "DOT/EUR", "EDU/EUR", "EGLD/EUR", "ENA/EUR", "ENJ/EUR", "EOS/EUR", "ETC/EUR", "ETH/EUR", "FTM/EUR", "GAL/EUR", "GALA/EUR", "GMT/EUR", "GRT/EUR", "HOT/EUR", "ICP/EUR", "ID/EUR", "JASMY/EUR", "LAZIO/EUR", "LINK/EUR", "LTC/EUR", "LUNA/EUR", "MATIC/EUR", "NEAR/EUR", "OP/EUR", "PEPE/EUR", "PORTO/EUR", "RENDER/EUR", "RNDR/EUR", "RUNE/EUR", "SHIB/EUR", "SOL/EUR", "SUI/EUR", "SXP/EUR", "THETA/EUR", "TRX/EUR", "UNI/EUR", "VET/EUR", "WAVES/EUR", "WIF/EUR", "WIN/EUR", "WRX/EUR", "XLM/EUR", "XRP/EUR", "YFI/EUR", "ZIL/EUR"
+	"ADA/EUR", "APT/EUR", "ARB/EUR", "ATOM/EUR", "AVAX/EUR", "BCH/EUR", "BNB/EUR", "BTC/EUR", "DOGE/EUR", "DOT/EUR", "EGLD/EUR", "ETH/EUR", "FTM/EUR", "GALA/EUR", "GMT/EUR", "GRT/EUR", "ICP/EUR", "LINK/EUR", "LTC/EUR", "NEAR/EUR", "NOT/EUR", "OP/EUR", "PEPE/EUR", "POL/EUR", "RENDER/EUR", "SHIB/EUR", "SOL/EUR", "SUI/EUR", "TRX/EUR", "VET/EUR", "WIF/EUR", "WIN/EUR", "XLM/EUR", "XRP/EUR"
 ]
 
 # Période d'évaluation (par exemple, 1 jour)
@@ -39,6 +39,7 @@ def evaluate_pair(pair):
 results = [evaluate_pair(pair) for pair in pairs]
 
 # Affichage des résultats
+pd.options.display.float_format = '${:,.3f}'.format
 results_df = pd.DataFrame(results)
 print(results_df)
 

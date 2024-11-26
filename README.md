@@ -131,6 +131,7 @@ Telegram is not mandatory. However, this is a great way to control your bot. Mor
 - `/performance`: Show performance of each finished trade grouped by pair
 - `/balance`: Show account balance per currency.
 - `/daily <n>`: Shows profit or loss per day, over the last n days.
+- `/montly <n>`: Shows profit or loss per month, over the last n months.
 - `/help`: Show help message.
 - `/version`: Show version.
 
